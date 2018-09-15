@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+</head>
+<body>
+    <div id="login">
+        <label for="">请输入你的用户名：</label>
+        <input type="text">
+        <button>登陆聊天室</button>
+    </div>
+    <div id="chat" hidden>
+        <!--显示在线用户信息-->
+        <div class="info">
+            <p>目前共有<span></span>人在线</p>
+            用户列表：
+            <ul class="list">
+            </ul>
+        </div>
+        <!--显示用户聊天内容-->
+        <div class="content">
+
+        </div>
+        <!--聊天发送框-->
+        <div class="publish">
+            <label for="">输入聊天内容：</label>
+            <input type="text">
+            <button>发送</button>
+        </div>
+
+    </div>
+    <script>
+        var socket = io('localhost:4000');
+        // 用户登陆功能
+        $('#login button').click(function () {
+            var nickname = $('#login input').val();
+            // console.log(nickname);
+            if(nickname.trim() == ''){
+                alert('用户名不能为空');
+                return;
+            }
+            socket.emit('login',nickname);
+            $('#login').hide();
+            $('#chat').show();
+            socket.on('welcome',function (data) {
+                $('.content').append('<p>欢迎<em>'+data+'</em>进入聊天室</p>');
+            });
+            socket.on('list',function (data) {
+                $('.info p span').text(data.count);
+                //清空用户列表
+                $('.info ul').empty();
+                //对users对象进行遍历，更新用户列表
+                $.each(data.users,function (index,val) {
+                    $('.info ul').append('<li>'+val+'</li>')
+                })
+            })
+        })
+
+        // 用户发表聊天功能
+        $('.publish button').click( function () {
+            var msg = $('.publish input').val();
+            if(msg.trim() == ''){
+                alert('请输入聊天内容');
+                return;
+            }else{
+                socket.emit('publish',msg);
+            }
+            // socket.on('publish',function (data) {
+            //     $('.content').append('<p><em>'+data.username+'</em>：'+data.msg+'</p>');
+            // })
+        });
+        socket.on('publish',function (data) {
+            $('.content').append('<p><em>'+data.username+'</em>：'+data.msg+'</p>');
+        })
+    </script>
+</body>
+</html>
