@@ -24,6 +24,18 @@ io.on('connection',(socket) => {
     socket.on('publish',function (data) {
         socket.emit('publish',{username:socket.username,msg:data});
         socket.broadcast.emit('publish',{username:socket.username,msg:data});
+    });
+    //注册用户注销事件
+    socket.on('disconnect',function () {
+        let user = socket.username;
+        //在线用户数减一
+        count--;
+        //用户名称更新
+        delete users[user];
+        //告知其它用户
+        socket.broadcast.emit('logout',user);
+        //更新用户列表
+        socket.broadcast.emit('list',{count:count,users:users});
     })
 });
 

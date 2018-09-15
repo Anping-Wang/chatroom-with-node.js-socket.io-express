@@ -74,6 +74,9 @@
         });
         socket.on('publish',function (data) {
             $('.content').append('<p><em>'+data.username+'</em>：'+data.msg+'</p>');
+        });
+        socket.on('logout',function (data) {
+            $('.content').append('<p><em>'+data+'</em>离开了聊天室...</p>');
         })
     </script>
 </body>
